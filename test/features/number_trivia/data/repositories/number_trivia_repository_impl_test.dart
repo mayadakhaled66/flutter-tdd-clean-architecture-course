@@ -268,12 +268,12 @@ void main() {
         'should return remote data when the call to remote data source is successful',
             () async {
           // arrange
-          when(mockRemoteDataSource.getNumberFotYearTrivia(any))
+          when(mockRemoteDataSource.getNumberForYearTrivia(any))
               .thenAnswer((_) async => tYearTriviaModel);
           // act
           final result = await repository.getNumberOfYearTrivia(tYear);
           // assert
-          verify(mockRemoteDataSource.getNumberFotYearTrivia(tYear));
+          verify(mockRemoteDataSource.getNumberForYearTrivia(tYear));
           expect(result, equals(Right(tYearTrivia)));
         },
       );
@@ -282,12 +282,12 @@ void main() {
         'should cache the data locally when the call to remote data source is successful',
             () async {
           // arrange
-          when(mockRemoteDataSource.getNumberFotYearTrivia(any))
+          when(mockRemoteDataSource.getNumberForYearTrivia(any))
               .thenAnswer((_) async => tYearTriviaModel);
           // act
           await repository.getNumberOfYearTrivia(tYear);
           // assert
-          verify(mockRemoteDataSource.getNumberFotYearTrivia(tYear));
+          verify(mockRemoteDataSource.getNumberForYearTrivia(tYear));
           verify(mockLocalDataSource.cacheNumberTrivia(tYearTriviaModel));
         },
       );
@@ -296,12 +296,12 @@ void main() {
         'should return server failure when the call to remote data source is unsuccessful',
             () async {
           // arrange
-          when(mockRemoteDataSource.getNumberFotYearTrivia(any))
+          when(mockRemoteDataSource.getNumberForYearTrivia(any))
               .thenThrow(ServerException());
           // act
           final result = await repository.getNumberOfYearTrivia(tYear);
           // assert
-          verify(mockRemoteDataSource.getNumberFotYearTrivia(tYear));
+          verify(mockRemoteDataSource.getNumberForYearTrivia(tYear));
           verifyZeroInteractions(mockLocalDataSource);
           expect(result, equals(Left(ServerFailure())));
         },

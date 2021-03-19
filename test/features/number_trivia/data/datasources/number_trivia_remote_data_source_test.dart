@@ -138,7 +138,7 @@ void main() {
         // arrange
         setUpMockHttpClientSuccess200();
         // act
-        dataSource.getNumberFotYearTrivia(tYear);
+        dataSource.getNumberForYearTrivia(tYear);
         // assert
         verify(mockHttpClient.get(
           'http://numbersapi.com/$tYear/year',
@@ -155,7 +155,7 @@ void main() {
         // arrange
         setUpMockHttpClientSuccess200();
         // act
-        final result = await dataSource.getNumberFotYearTrivia(tYear);
+        final result = await dataSource.getNumberForYearTrivia(tYear);
         // assert
         expect(result, equals(tYearTriviaModel));
       },
@@ -167,7 +167,7 @@ void main() {
         // arrange
         setUpMockHttpClientFailure404();
         // act
-        final call = dataSource.getNumberFotYearTrivia;
+        final call = dataSource.getNumberForYearTrivia;
         // assert
         expect(() => call(tYear), throwsA(TypeMatcher<ServerException>()));
       },
