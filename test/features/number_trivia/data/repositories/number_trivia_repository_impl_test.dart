@@ -244,4 +244,100 @@ void main() {
       );
     });
   });
+
+  group('getYearTrivia', () {
+    final tYear = 2000;
+    final tYearTriviaModel =
+    NumberTriviaModel(number: tYear, text: 'test trivia');
+    final NumberTrivia tYearTrivia = tYearTriviaModel;
+
+    test(
+      'should check if the device is online',
+          () async {
+        // arrange
+        when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
+        // act
+        repository.getNumberOfYearTrivia(tYear);
+        // assert
+        verify(mockNetworkInfo.isConnected);
+      },
+    );
+
+    runTestsOnline(() {
+      test(
+        'should return remote data when the call to remote data source is successful',
+            () async {
+          // arrange
+          when(mockRemoteDataSource.getNumberFotYearTrivia(any))
+              .thenAnswer((_) async => tYearTriviaModel);
+          // act
+          final result = await repository.getNumberOfYearTrivia(tYear);
+          // assert
+          verify(mockRemoteDataSource.getNumberFotYearTrivia(tYear));
+          expect(result, equals(Right(tYearTrivia)));
+        },
+      );
+
+      test(
+        'should cache the data locally when the call to remote data source is successful',
+            () async {
+          // arrange
+          when(mockRemoteDataSource.getNumberFotYearTrivia(any))
+              .thenAnswer((_) async => tYearTriviaModel);
+          // act
+          await repository.getNumberOfYearTrivia(tYear);
+          // assert
+          verify(mockRemoteDataSource.getNumberFotYearTrivia(tYear));
+          verify(mockLocalDataSource.cacheNumberTrivia(tYearTriviaModel));
+        },
+      );
+
+      test(
+        'should return server failure when the call to remote data source is unsuccessful',
+            () async {
+          // arrange
+          when(mockRemoteDataSource.getNumberFotYearTrivia(any))
+              .thenThrow(ServerException());
+          // act
+          final result = await repository.getNumberOfYearTrivia(tYear);
+          // assert
+          verify(mockRemoteDataSource.getNumberFotYearTrivia(tYear));
+          verifyZeroInteractions(mockLocalDataSource);
+          expect(result, equals(Left(ServerFailure())));
+        },
+      );
+    });
+
+    runTestsOffline(() {
+      test(
+        'should return last locally cached data when the cached data is present',
+            () async {
+          // arrange
+          when(mockLocalDataSource.getLastNumberTrivia())
+              .thenAnswer((_) async => tYearTriviaModel);
+          // act
+          final result = await repository.getNumberOfYearTrivia(tYear);
+          // assert
+          verifyZeroInteractions(mockRemoteDataSource);
+          verify(mockLocalDataSource.getLastNumberTrivia());
+          expect(result, equals(Right(tYearTrivia)));
+        },
+      );
+
+      test(
+        'should return CacheFailure when there is no cached data present',
+            () async {
+          // arrange
+          when(mockLocalDataSource.getLastNumberTrivia())
+              .thenThrow(CacheException());
+          // act
+          final result = await repository.getNumberOfYearTrivia(tYear);
+          // assert
+          verifyZeroInteractions(mockRemoteDataSource);
+          verify(mockLocalDataSource.getLastNumberTrivia());
+          expect(result, equals(Left(CacheFailure())));
+        },
+      );
+    });
+  });
 }

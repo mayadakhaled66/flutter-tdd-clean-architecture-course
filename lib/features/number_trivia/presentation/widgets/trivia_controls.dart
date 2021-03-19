@@ -52,6 +52,20 @@ class _TriviaControlsState extends State<TriviaControls> {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            RaisedButton(
+              child: Text('Year Trivia'),
+              color: Theme.of(context).accentColor,
+              textTheme: ButtonTextTheme.primary,
+              onPressed: dispatchYearTrivia,
+            ),
+          ],
         )
       ],
     );
@@ -62,7 +76,11 @@ class _TriviaControlsState extends State<TriviaControls> {
     BlocProvider.of<NumberTriviaBloc>(context)
         .add(GetTriviaForConcreteNumber(inputStr));
   }
-
+  void dispatchYearTrivia() {
+    controller.clear();
+    BlocProvider.of<NumberTriviaBloc>(context)
+        .add(GetTriviaYearNumber(inputStr));
+  }
   void dispatchRandom() {
     controller.clear();
     BlocProvider.of<NumberTriviaBloc>(context).add(GetTriviaForRandomNumber());

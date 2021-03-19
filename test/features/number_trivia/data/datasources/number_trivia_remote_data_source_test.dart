@@ -125,4 +125,52 @@ void main() {
       },
     );
   });
+
+  group('getConcreteNumberTrivia', () {
+    final tYear = 1;
+    final tYearTriviaModel =
+    NumberTriviaModel.fromJson(json.decode(fixture('trivia.json')));
+
+    test(
+      '''should perform a GET request on a URL with year
+       being the endpoint and with application/json header''',
+          () async {
+        // arrange
+        setUpMockHttpClientSuccess200();
+        // act
+        dataSource.getNumberFotYearTrivia(tYear);
+        // assert
+        verify(mockHttpClient.get(
+          'http://numbersapi.com/$tYear/year',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ));
+      },
+    );
+
+    test(
+      'should return YearTrivia when the response code is 200 (success)',
+          () async {
+        // arrange
+        setUpMockHttpClientSuccess200();
+        // act
+        final result = await dataSource.getNumberFotYearTrivia(tYear);
+        // assert
+        expect(result, equals(tYearTriviaModel));
+      },
+    );
+
+    test(
+      'should throw a ServerException when the response code is 404 or other',
+          () async {
+        // arrange
+        setUpMockHttpClientFailure404();
+        // act
+        final call = dataSource.getNumberFotYearTrivia;
+        // assert
+        expect(() => call(tYear), throwsA(TypeMatcher<ServerException>()));
+      },
+    );
+  });
 }

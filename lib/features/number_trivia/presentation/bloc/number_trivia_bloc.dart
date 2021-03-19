@@ -11,7 +11,8 @@ import './bloc.dart';
 import '../../../../core/util/input_converter.dart';
 import '../../domain/usecases/get_concrete_number_trivia.dart';
 import '../../domain/usecases/get_random_number_trivia.dart';
-
+import '../../domain/usecases/get_number_of_year_trivia.dart';
+import 'number_trivia_event.dart';
 const String SERVER_FAILURE_MESSAGE = 'Server Failure';
 const String CACHE_FAILURE_MESSAGE = 'Cache Failure';
 const String INVALID_INPUT_FAILURE_MESSAGE =
@@ -21,16 +22,20 @@ class NumberTriviaBloc extends Bloc<NumberTriviaEvent, NumberTriviaState> {
   final GetConcreteNumberTrivia getConcreteNumberTrivia;
   final GetRandomNumberTrivia getRandomNumberTrivia;
   final InputConverter inputConverter;
+  final GetNumberOfYearTrivia getNumberOfYearTrivia;
 
   NumberTriviaBloc({
     @required GetConcreteNumberTrivia concrete,
     @required GetRandomNumberTrivia random,
+    @required GetNumberOfYearTrivia numberOfYearTrivia,
     @required this.inputConverter,
   })  : assert(concrete != null),
         assert(random != null),
+        assert(numberOfYearTrivia != null),
         assert(inputConverter != null),
         getConcreteNumberTrivia = concrete,
-        getRandomNumberTrivia = random;
+        getRandomNumberTrivia = random,
+        getNumberOfYearTrivia = numberOfYearTrivia;
 
   @override
   NumberTriviaState get initialState => Empty();
@@ -58,6 +63,21 @@ class NumberTriviaBloc extends Bloc<NumberTriviaEvent, NumberTriviaState> {
       yield Loading();
       final failureOrTrivia = await getRandomNumberTrivia(NoParams());
       yield* _eitherLoadedOrErrorState(failureOrTrivia);
+    } else if (event is GetTriviaYearNumber) {
+      final inputEither =
+      inputConverter.stringToUnsignedInteger(event.numberString);
+
+      yield* inputEither.fold(
+            (failure) async* {
+          yield Error(message: INVALID_INPUT_FAILURE_MESSAGE);
+        },
+            (integer) async* {
+          yield Loading();
+          final failureOrTrivia =
+          await getNumberOfYearTrivia(Parameters(number: integer));
+          yield* _eitherLoadedOrErrorState(failureOrTrivia);
+        },
+      );
     }
   }
 

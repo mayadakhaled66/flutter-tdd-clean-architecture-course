@@ -17,3 +17,12 @@ class GetTriviaForConcreteNumber extends NumberTriviaEvent {
 }
 
 class GetTriviaForRandomNumber extends NumberTriviaEvent {}
+
+class GetTriviaYearNumber extends NumberTriviaEvent {
+  final String numberString;
+
+  GetTriviaYearNumber(this.numberString);
+
+  @override
+  List<Object> get props => [numberString];
+}

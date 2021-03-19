@@ -37,7 +37,12 @@ class NumberTriviaRepositoryImpl implements NumberTriviaRepository {
       return remoteDataSource.getRandomNumberTrivia();
     });
   }
-
+  @override
+  Future<Either<Failure, NumberTrivia>> getNumberOfYearTrivia(int number) async{
+    return await _getTrivia(() {
+      return remoteDataSource.getNumberFotYearTrivia(number);
+    });
+  }
   Future<Either<Failure, NumberTrivia>> _getTrivia(
     _ConcreteOrRandomChooser getConcreteOrRandom,
   ) async {
@@ -58,4 +63,6 @@ class NumberTriviaRepositoryImpl implements NumberTriviaRepository {
       }
     }
   }
+
+
 }

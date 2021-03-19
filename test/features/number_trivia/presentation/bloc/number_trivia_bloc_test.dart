@@ -3,6 +3,7 @@ import 'package:clean_architecture_tdd_course/core/usecases/usecase.dart';
 import 'package:clean_architecture_tdd_course/core/util/input_converter.dart';
 import 'package:clean_architecture_tdd_course/features/number_trivia/domain/entities/number_trivia.dart';
 import 'package:clean_architecture_tdd_course/features/number_trivia/domain/usecases/get_concrete_number_trivia.dart';
+import 'package:clean_architecture_tdd_course/features/number_trivia/domain/usecases/get_number_of_year_trivia.dart';
 import 'package:clean_architecture_tdd_course/features/number_trivia/domain/usecases/get_random_number_trivia.dart';
 import 'package:clean_architecture_tdd_course/features/number_trivia/presentation/bloc/bloc.dart';
 import 'package:dartz/dartz.dart';
@@ -14,22 +15,29 @@ class MockGetConcreteNumberTrivia extends Mock
 
 class MockGetRandomNumberTrivia extends Mock implements GetRandomNumberTrivia {}
 
+class MockGetNumberOfYearTrivia extends Mock
+    implements GetNumberOfYearTrivia {}
+
 class MockInputConverter extends Mock implements InputConverter {}
 
 void main() {
   NumberTriviaBloc bloc;
   MockGetConcreteNumberTrivia mockGetConcreteNumberTrivia;
   MockGetRandomNumberTrivia mockGetRandomNumberTrivia;
+  MockGetNumberOfYearTrivia getNumberOfYearTrivia;
   MockInputConverter mockInputConverter;
+
 
   setUp(() {
     mockGetConcreteNumberTrivia = MockGetConcreteNumberTrivia();
     mockGetRandomNumberTrivia = MockGetRandomNumberTrivia();
+    getNumberOfYearTrivia = MockGetNumberOfYearTrivia();
     mockInputConverter = MockInputConverter();
 
     bloc = NumberTriviaBloc(
       concrete: mockGetConcreteNumberTrivia,
       random: mockGetRandomNumberTrivia,
+      numberOfYearTrivia: getNumberOfYearTrivia,
       inputConverter: mockInputConverter,
     );
   });
@@ -219,6 +227,118 @@ void main() {
         expectLater(bloc, emitsInOrder(expected));
         // act
         bloc.add(GetTriviaForRandomNumber());
+      },
+    );
+  });
+
+  group('GetTriviaForYear', () {
+    final tYearString = '2000';
+    final tYearParsed = 2000;
+    final tYearTrivia = NumberTrivia(number: 2000, text: 'test trivia');
+
+    void setUpMockInputConverterSuccess() =>
+        when(mockInputConverter.stringToUnsignedInteger(any))
+            .thenReturn(Right(tYearParsed));
+
+    test(
+      'should call the InputConverter to validate and convert the string to an unsigned integer',
+          () async {
+        // arrange
+        setUpMockInputConverterSuccess();
+        // act
+        bloc.add(GetTriviaYearNumber(tYearString));
+        await untilCalled(mockInputConverter.stringToUnsignedInteger(any));
+        // assert
+        verify(mockInputConverter.stringToUnsignedInteger(tYearString));
+      },
+    );
+
+    test(
+      'should emit [Error] when the input is invalid',
+          () async {
+        // arrange
+        when(mockInputConverter.stringToUnsignedInteger(any))
+            .thenReturn(Left(InvalidInputFailure()));
+        // assert later
+        final expected = [
+          Empty(),
+          Error(message: INVALID_INPUT_FAILURE_MESSAGE),
+        ];
+        expectLater(bloc, emitsInOrder(expected));
+        // act
+        bloc.add(GetTriviaYearNumber(tYearString));
+      },
+    );
+
+    test(
+      'should get data from the concrete use case',
+          () async {
+        // arrange
+        setUpMockInputConverterSuccess();
+        when(getNumberOfYearTrivia(any))
+            .thenAnswer((_) async => Right(tYearTrivia));
+        // act
+        bloc.add(GetTriviaYearNumber(tYearString));
+        await untilCalled(getNumberOfYearTrivia(any));
+        // assert
+        verify(getNumberOfYearTrivia(Parameters(number: tYearParsed)));
+      },
+    );
+
+    test(
+      'should emit [Loading, Loaded] when data is gotten successfully',
+          () async {
+        // arrange
+        setUpMockInputConverterSuccess();
+        when(getNumberOfYearTrivia(any))
+            .thenAnswer((_) async => Right(tYearTrivia));
+        // assert later
+        final expected = [
+          Empty(),
+          Loading(),
+          Loaded(trivia: tYearTrivia),
+        ];
+        expectLater(bloc, emitsInOrder(expected));
+        // act
+        bloc.add(GetTriviaYearNumber(tYearString));
+      },
+    );
+
+    test(
+      'should emit [Loading, Error] when getting data fails',
+          () async {
+        // arrange
+        setUpMockInputConverterSuccess();
+        when(getNumberOfYearTrivia(any))
+            .thenAnswer((_) async => Left(ServerFailure()));
+        // assert later
+        final expected = [
+          Empty(),
+          Loading(),
+          Error(message: SERVER_FAILURE_MESSAGE),
+        ];
+        expectLater(bloc, emitsInOrder(expected));
+        // act
+        bloc.add(GetTriviaYearNumber(tYearString));
+      },
+    );
+
+    test(
+      'should emit [Loading, Error] with a proper message for the error when getting data fails',
+          () async {
+        // arrange
+        setUpMockInputConverterSuccess();
+        when(getNumberOfYearTrivia(any))
+            .thenAnswer((_) async => Left(CacheFailure()));
+        // assert later
+        final expected = [
+          Empty(),
+          Loading(),
+          Error(message: CACHE_FAILURE_MESSAGE),
+        ];
+        expectLater(bloc, emitsInOrder(expected));
+        // act
+        bloc.add(GetTriviaYearNumber(tYearString));
       },
     );
   });
